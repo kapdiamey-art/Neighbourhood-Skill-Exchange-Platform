@@ -1,0 +1,68 @@
+/* ═══════════════════════════════════════════════════════════
+   FIND HELP PAGE
+   ═══════════════════════════════════════════════════════════ */
+
+.find-help__header {
+  margin-bottom: var(--space-6);
+}
+
+.find-help__title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.find-help__subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* — Filter bar — */
+.find-help__filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+/* — Results count — */
+.find-help__results-count {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.find-help__results-count strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* — Cards grid — */
+.find-help__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-5);
+}
+
+.find-help__empty {
+  text-align: center;
+  padding: var(--space-12) 0;
+  color: var(--text-muted);
+}
+
+.find-help__empty-icon {
+  font-size: 48px;
+  margin-bottom: var(--space-4);
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .find-help__filters {
+    grid-template-columns: 1fr;
+  }
+}

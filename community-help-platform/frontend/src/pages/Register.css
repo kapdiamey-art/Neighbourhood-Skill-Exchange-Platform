@@ -1,0 +1,69 @@
+/* ═══════════════════════════════════════════════════════════
+   REGISTER PAGE
+   ═══════════════════════════════════════════════════════════ */
+
+.register {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) 0;
+}
+
+.register__card {
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-10);
+  width: 100%;
+  max-width: 520px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.register__icon {
+  font-size: 36px;
+  margin-bottom: var(--space-4);
+}
+
+.register__title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.register__subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--space-8);
+}
+
+.register__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.register__footer {
+  text-align: center;
+  margin-top: var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.register__footer a {
+  color: var(--color-primary-600);
+  font-weight: 600;
+}
+
+.register__footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 540px) {
+  .register__card {
+    padding: var(--space-6);
+  }
+
+  .register__row {
+    grid-template-columns: 1fr;
+  }
+}

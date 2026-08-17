@@ -1,0 +1,158 @@
+/* ═══════════════════════════════════════════════════════════
+   NAVBAR
+   ═══════════════════════════════════════════════════════════ */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 var(--space-6);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* — Brand — */
+.navbar__brand {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.navbar__brand-icon {
+  font-size: var(--text-xl);
+}
+
+/* — Nav links — */
+.navbar__links {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.navbar__link {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out);
+}
+
+.navbar__link:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.navbar__link--active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* — Auth buttons — */
+.navbar__auth {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: var(--space-6);
+}
+
+.navbar__login-btn {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.navbar__login-btn:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.navbar__register-btn {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-slate-900);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.navbar__register-btn:hover {
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+
+/* — Mobile hamburger — */
+.navbar__hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  padding: var(--space-2);
+}
+
+/* — Mobile menu — */
+.navbar__mobile-menu {
+  display: none;
+}
+
+/* — Responsive — */
+@media (max-width: 768px) {
+  .navbar__links,
+  .navbar__auth {
+    display: none;
+  }
+
+  .navbar__hamburger {
+    display: block;
+  }
+
+  .navbar__mobile-menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: var(--color-slate-900);
+    padding: var(--space-4);
+    gap: var(--space-1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    animation: slideDown 0.25s var(--ease-out);
+  }
+
+  .navbar__mobile-menu .navbar__link,
+  .navbar__mobile-menu .navbar__login-btn,
+  .navbar__mobile-menu .navbar__register-btn {
+    width: 100%;
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+  }
+
+  .navbar__mobile-menu .navbar__register-btn {
+    text-align: center;
+    margin-top: var(--space-2);
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

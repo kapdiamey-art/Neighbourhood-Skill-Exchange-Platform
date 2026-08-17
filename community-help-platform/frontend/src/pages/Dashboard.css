@@ -1,0 +1,140 @@
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD PAGE
+   ═══════════════════════════════════════════════════════════ */
+
+/* — Welcome banner — */
+.dashboard__banner {
+  background: linear-gradient(135deg, var(--color-slate-900), var(--color-primary-700));
+  border-radius: var(--radius-lg);
+  padding: var(--space-10) var(--space-8);
+  color: #fff;
+  margin-bottom: var(--space-8);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard__banner::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.dashboard__banner-title {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  margin-bottom: var(--space-2);
+  position: relative;
+}
+
+.dashboard__banner-sub {
+  font-size: var(--text-base);
+  opacity: 0.8;
+  position: relative;
+}
+
+/* — Quick actions — */
+.dashboard__actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-10);
+}
+
+.dashboard__action-card {
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  color: #fff;
+  text-decoration: none;
+  transition: transform var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard__action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.dashboard__action-card::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  right: -20%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dashboard__action-card--search   { background: linear-gradient(135deg, #059669, #10b981); }
+.dashboard__action-card--emergency { background: linear-gradient(135deg, #e11d48, #f43f5e); }
+.dashboard__action-card--requests  { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+
+.dashboard__action-icon {
+  font-size: 28px;
+  margin-bottom: var(--space-3);
+  display: block;
+}
+
+.dashboard__action-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+
+.dashboard__action-desc {
+  font-size: var(--text-sm);
+  opacity: 0.85;
+}
+
+/* — Section headings — */
+.dashboard__section-header {
+  margin-bottom: var(--space-5);
+}
+
+.dashboard__section-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.dashboard__section-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* — User cards grid — */
+.dashboard__cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-5);
+}
+
+.dashboard__empty {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .dashboard__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard__banner {
+    padding: var(--space-6);
+  }
+
+  .dashboard__banner-title {
+    font-size: var(--text-2xl);
+  }
+}
