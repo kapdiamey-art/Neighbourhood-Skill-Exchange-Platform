@@ -34,7 +34,11 @@ class RequestOut(BaseModel):
     urgency:        str
     status:         str
     created_by:     int
+    creator_name:   Optional[str] = None
+    creator_email:  Optional[str] = None
     helper_id:      Optional[int] = None
+    helper_name:    Optional[str] = None
+    helper_email:   Optional[str] = None
     created_at:     datetime
 
     model_config = {"from_attributes": True}

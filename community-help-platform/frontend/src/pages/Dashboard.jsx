@@ -64,13 +64,10 @@ function Dashboard() {
       return
     }
     try {
-      // Call backend API to persist status update in MySQL database
-      await requestsAPI.updateStatus(reqId, 'In Progress', currentUser.id)
+      const updated = await requestsAPI.updateStatus(reqId, 'In Progress', currentUser.id)
       setOfferedIds((prev) => [...prev, reqId])
       setAllRequests((prev) =>
-        prev.map((r) =>
-          r.id === reqId ? { ...r, status: 'In Progress', helper_id: currentUser.id } : r
-        )
+        prev.map((r) => (r.id === reqId ? updated : r))
       )
     } catch (err) {
       alert(err.message || 'Failed to offer help.')
@@ -160,7 +157,7 @@ function Dashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
           {displayedRequests.map((req) => {
             const matchesMySkill = isSkillMatch(req)
-            const isOffered = offeredIds.includes(req.id) || req.status === 'In Progress'
+            const isOffered = offeredIds.includes(req.id) || req.status === 'In Progress' || (currentUser && req.helper_id === currentUser.id)
 
             return (
               <div key={req.id} style={{
@@ -208,6 +205,22 @@ function Dashboard() {
 
                   <h3 style={{ fontSize: '1.1rem', margin: '0.5rem 0', color: '#1f2937' }}>{req.title}</h3>
                   <p style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '1rem', lineHeight: '1.4' }}>{req.description}</p>
+
+                  {/* Requester Contact Details when Offer Accepted */}
+                  {isOffered && req.creator_email && (
+                    <div style={{
+                      background: '#eff6ff',
+                      border: '1px solid #bfdbfe',
+                      padding: '0.6rem 0.75rem',
+                      borderRadius: '8px',
+                      marginBottom: '0.75rem',
+                      fontSize: '0.85rem',
+                      color: '#1e40af'
+                    }}>
+                      📩 <strong>Requester Contact:</strong> {req.creator_name} (<a href={`mailto:${req.creator_email}`} style={{ color: '#1d4ed8', textDecoration: 'underline' }}>{req.creator_email}</a>)
+                    </div>
+                  )}
+
                   {req.skill_required && (
                     <span style={{ fontSize: '0.8rem', background: '#f3f4f6', padding: '0.25rem 0.6rem', borderRadius: '6px', color: '#4b5563', display: 'inline-block', marginBottom: '1rem' }}>
                       💡 Skill Needed: <strong>{req.skill_required}</strong>

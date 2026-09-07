@@ -19,6 +19,39 @@ from app.schemas.request import RequestCreate, RequestStatusUpdate, RequestOut
 router = APIRouter(prefix="/api/requests", tags=["Help Requests"])
 
 
+def _enrich_request(req: HelpRequest, db: Session) -> dict:
+    """Helper to add creator and helper contact info to request dict."""
+    data = {
+        "id": req.id,
+        "title": req.title,
+        "description": req.description,
+        "skill_required": req.skill_required,
+        "urgency": req.urgency,
+        "status": req.status,
+        "created_by": req.created_by,
+        "helper_id": req.helper_id,
+        "created_at": req.created_at,
+        "creator_name": None,
+        "creator_email": None,
+        "helper_name": None,
+        "helper_email": None,
+    }
+
+    if req.created_by:
+        creator = db.query(User).filter(User.id == req.created_by).first()
+        if creator:
+            data["creator_name"] = creator.name
+            data["creator_email"] = creator.email
+
+    if req.helper_id:
+        helper = db.query(User).filter(User.id == req.helper_id).first()
+        if helper:
+            data["helper_name"] = helper.name
+            data["helper_email"] = helper.email
+
+    return data
+
+
 # ════════════════════════════════════════════════════════════════
 # GET /api/requests
 # ════════════════════════════════════════════════════════════════
@@ -27,7 +60,8 @@ def get_all_requests(db: Session = Depends(get_db)):
     """
     Returns all help requests ordered by most recent first.
     """
-    return db.query(HelpRequest).order_by(HelpRequest.created_at.desc()).all()
+    requests = db.query(HelpRequest).order_by(HelpRequest.created_at.desc()).all()
+    return [_enrich_request(r, db) for r in requests]
 
 
 # ════════════════════════════════════════════════════════════════
@@ -38,12 +72,13 @@ def get_my_requests(user_id: int, db: Session = Depends(get_db)):
     """
     Returns all requests created by a specific user.
     """
-    return (
+    requests = (
         db.query(HelpRequest)
         .filter(HelpRequest.created_by == user_id)
         .order_by(HelpRequest.created_at.desc())
         .all()
     )
+    return [_enrich_request(r, db) for r in requests]
 
 
 # ════════════════════════════════════════════════════════════════
@@ -70,7 +105,7 @@ def create_request(data: RequestCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_request)
 
-    return new_request
+    return _enrich_request(new_request, db)
 
 
 # ════════════════════════════════════════════════════════════════
@@ -95,4 +130,4 @@ def update_request_status(
 
     db.commit()
     db.refresh(req)
-    return req
+    return _enrich_request(req, db)

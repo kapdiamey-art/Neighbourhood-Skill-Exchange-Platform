@@ -107,6 +107,27 @@ function MyRequests() {
 
             <p className="request-card__desc">{req.description}</p>
 
+            {/* Contact Box when a Helper joins */}
+            {req.helper_name && (
+              <div style={{
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                margin: '0.75rem 0',
+                color: '#166534',
+                fontSize: '0.9rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                flexWrap: 'wrap'
+              }}>
+                <span>🤝 <strong>Helper Assigned:</strong> {req.helper_name}</span>
+                <span>•</span>
+                <span>✉️ <a href={`mailto:${req.helper_email}`} style={{ color: '#15803d', textDecoration: 'underline', fontWeight: '600' }}>{req.helper_email}</a></span>
+              </div>
+            )}
+
             <div className="request-card__meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <span className="request-card__meta-item">🛠️ {req.skill_required}</span>
