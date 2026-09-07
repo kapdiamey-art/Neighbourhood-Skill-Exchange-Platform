@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { requestsAPI } from '../api/api'
+import { useAuth } from '../context/AuthContext'
 import './CreateRequest.css'
 import './Login.css'
 
 function CreateRequest() {
   const navigate = useNavigate()
+  const { currentUser } = useAuth()
 
   const [form, setForm] = useState({
     title: '',
@@ -12,22 +15,38 @@ function CreateRequest() {
     description: '',
     urgency: 'Medium',
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert(
-      `Request submitted!\n\n` +
-      `Title: ${form.title}\n` +
-      `Skill: ${form.skillRequired}\n` +
-      `Urgency: ${form.urgency}\n` +
-      `Description: ${form.description}\n\n` +
-      `(No backend connected yet)`
-    )
-    navigate('/my-requests')
+    setError('')
+
+    if (!currentUser) {
+      setError('You must be logged in to create a request.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Call POST /api/requests/
+      await requestsAPI.create({
+        title:          form.title,
+        description:    form.description,
+        skill_required: form.skillRequired,
+        urgency:        form.urgency,
+        created_by:     currentUser.id,  // logged-in user's ID
+      })
+      navigate('/my-requests')
+    } catch (err) {
+      setError(err.message || 'Failed to submit request. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -36,6 +55,20 @@ function CreateRequest() {
         <div className="create-request__icon">📝</div>
         <h1 className="create-request__title">Create Help Request</h1>
         <p className="create-request__subtitle">Tell your neighbours what you need</p>
+
+        {!currentUser && (
+          <div style={{ background: '#fef3cd', color: '#856404', padding: '0.75rem',
+            borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
+            ⚠️ Please <a href="/login">log in</a> to submit a request.
+          </div>
+        )}
+
+        {error && (
+          <div style={{ color: '#ef4444', background: '#fef2f2', padding: '0.75rem',
+            borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -80,8 +113,13 @@ function CreateRequest() {
             </div>
           </div>
 
-          <button type="submit" className="btn btn--primary" style={{ marginTop: 'var(--space-4)' }}>
-            Submit Request
+          <button
+            type="submit"
+            className="btn btn--primary"
+            style={{ marginTop: 'var(--space-4)' }}
+            disabled={loading || !currentUser}
+          >
+            {loading ? 'Submitting…' : 'Submit Request'}
           </button>
         </form>
       </div>

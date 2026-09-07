@@ -1,9 +1,14 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { authAPI } from '../api/api'
+import { useAuth } from '../context/AuthContext'
 import './Register.css'
-import './Login.css' /* reuse shared form classes */
+import './Login.css'
 
 function Register() {
+  const navigate = useNavigate()
+  const { login } = useAuth()
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -13,23 +18,30 @@ function Register() {
     skills: '',
     availability: 'Weekdays',
   })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault()
-    alert(
-      `Registration data:\n` +
-      `Name: ${form.name}\n` +
-      `Email: ${form.email}\n` +
-      `Neighborhood: ${form.neighborhood}\n` +
-      `Profession: ${form.profession}\n` +
-      `Skills: ${form.skills}\n` +
-      `Availability: ${form.availability}\n\n` +
-      `(No backend connected yet)`
-    )
+    setError('')
+    setLoading(true)
+
+    try {
+      // Call POST /api/auth/register
+      const newUser = await authAPI.register(form)
+      // Store user in AuthContext + localStorage
+      login(newUser)
+      // Redirect to dashboard
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -38,6 +50,13 @@ function Register() {
         <div className="register__icon">🚀</div>
         <h1 className="register__title">Create your account</h1>
         <p className="register__subtitle">Join your neighbourhood community today</p>
+
+        {error && (
+          <div style={{ color: 'var(--color-danger, #ef4444)', marginBottom: '1rem',
+            background: '#fef2f2', padding: '0.75rem', borderRadius: '8px', fontSize: '0.9rem' }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleRegister}>
           <div className="register__row">
@@ -92,7 +111,9 @@ function Register() {
               placeholder="e.g. JavaScript, React, Node.js" value={form.skills} onChange={handleChange} required />
           </div>
 
-          <button type="submit" className="btn btn--primary">Create account</button>
+          <button type="submit" className="btn btn--primary" disabled={loading}>
+            {loading ? 'Creating account…' : 'Create account'}
+          </button>
         </form>
 
         <p className="register__footer">

@@ -1,91 +1,66 @@
 # database/connection.py
 #
-# This file is responsible for ONE thing: teaching SQLAlchemy how to talk
-# to our SQLite database. Everything defined here will be imported and used
-# by other parts of the app.
+# Responsible for connecting SQLAlchemy to MySQL using credentials
+# read from the .env file (never hard-coded in source code).
 
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 # ---------------------------------------------------------------------------
-# 1. DATABASE URL
+# Load environment variables from backend/.env
 # ---------------------------------------------------------------------------
-# This string tells SQLAlchemy three things:
-#   - WHAT kind of database  → sqlite
-#   - HOW to access it       → /// means "relative to current directory"
-#   - WHERE the file lives   → community_help.db
-#
-# When the app starts, SQLite will look for this file.
-# If the file does not exist yet, SQLite creates it automatically.
-#
-# Full path example on your machine:
-#   backend/community_help.db
-DATABASE_URL = "sqlite:///./community_help.db"
+load_dotenv()
+
+MYSQL_USER     = os.getenv("MYSQL_USER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
+MYSQL_HOST     = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_PORT     = os.getenv("MYSQL_PORT", "3306")
+MYSQL_DB       = os.getenv("MYSQL_DB", "community_help")
 
 # ---------------------------------------------------------------------------
-# 2. ENGINE
+# DATABASE URL
 # ---------------------------------------------------------------------------
-# The engine is the core connection to the database.
-# Think of it like a phone line between your Python code and the .db file.
-# Nothing actually happens until you "make a call" (open a session).
-#
-# connect_args={"check_same_thread": False}
-#   SQLite was designed for single-threaded use, but FastAPI handles many
-#   requests at the same time (multi-threaded). This argument tells SQLite:
-#   "It's okay — we'll manage thread safety ourselves."
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False},
+# Format:  dialect+driver://user:password@host:port/database
+# mysql+pymysql tells SQLAlchemy to use PyMySQL as the driver.
+# PyMySQL is pure Python — no Rust/C compilation needed.
+DATABASE_URL = (
+    f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}"
+    f"@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
 )
 
 # ---------------------------------------------------------------------------
-# 3. SESSION FACTORY (SessionLocal)
+# ENGINE
 # ---------------------------------------------------------------------------
-# A "session" is a temporary workspace for a single database conversation.
-# SessionLocal is a factory — calling SessionLocal() creates a new session.
-#
-# autocommit=False  → changes are NOT saved automatically; we decide when to save
-# autoflush=False   → changes are NOT sent to the DB automatically mid-session
-# bind=engine       → tells the session which database (engine) to use
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
-)
+# The engine is the low-level connection pool to MySQL.
+# pool_pre_ping=True: tests the connection before using it from the pool,
+# preventing "MySQL has gone away" errors after idle periods.
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 # ---------------------------------------------------------------------------
-# 4. BASE CLASS
+# SESSION FACTORY
 # ---------------------------------------------------------------------------
-# Base is the parent class that all future database models will inherit from.
-# When you later write:
-#
-#   class User(Base):
-#       __tablename__ = "users"
-#       ...
-#
-# SQLAlchemy uses Base to understand that User is a database table,
-# and Base.metadata knows about every table defined this way.
-#
-# We call Base.metadata.create_all(engine) at startup to create the tables.
+# Each call to SessionLocal() creates a fresh, isolated database session.
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# ---------------------------------------------------------------------------
+# BASE CLASS
+# ---------------------------------------------------------------------------
+# All database models (User, HelpRequest, …) will inherit from Base.
+# Base.metadata keeps a registry of every table we define.
 class Base(DeclarativeBase):
     pass
 
 
 # ---------------------------------------------------------------------------
-# 5. DEPENDENCY — get_db()
+# DEPENDENCY — get_db()
 # ---------------------------------------------------------------------------
-# FastAPI uses "dependency injection" to pass a database session into each
-# endpoint automatically. This function:
-#
-#   1. Opens a fresh session for each incoming HTTP request
-#   2. Hands it to the endpoint function
-#   3. Closes it automatically when the request is done (even on errors)
-#
-# The "yield" keyword makes this a generator — code before yield runs first,
-# the endpoint runs, then code after yield (the finally block) runs at the end.
+# FastAPI injects this into endpoints via Depends(get_db).
+# Opens a session, yields it to the endpoint, then closes it automatically.
 def get_db():
-    db = SessionLocal()        # Open a new session
+    db = SessionLocal()
     try:
-        yield db               # Hand the session to the endpoint
+        yield db
     finally:
-        db.close()             # Always close the session when done
+        db.close()

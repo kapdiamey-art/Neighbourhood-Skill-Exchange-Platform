@@ -1,18 +1,38 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import UserCard from '../components/UserCard'
-import { currentUser, mockUsers } from '../data/mockData'
+import { usersAPI } from '../api/api'
+import { useAuth } from '../context/AuthContext'
 import './Dashboard.css'
 
 function Dashboard() {
-  const nearbyPeople = mockUsers.filter(
-    (u) => u.neighborhood === currentUser.neighborhood && u.id !== currentUser.id
-  )
+  const { currentUser } = useAuth()
+  const [allUsers, setAllUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Fetch all users from the real backend
+    usersAPI.getAll()
+      .then(setAllUsers)
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
+  // Show users in the same neighborhood as the logged-in user
+  const nearbyPeople = currentUser
+    ? allUsers.filter(
+        (u) => u.neighborhood === currentUser.neighborhood && u.id !== currentUser.id
+      )
+    : allUsers.slice(0, 6)  // if not logged in, show first 6
+
+  const displayName = currentUser ? currentUser.name.split(' ')[0] : 'there'
+  const displayNeighborhood = currentUser?.neighborhood || 'your neighbourhood'
 
   return (
     <div>
       {/* Welcome Banner */}
       <div className="dashboard__banner">
-        <h1 className="dashboard__banner-title">Welcome back, {currentUser.name} 👋</h1>
+        <h1 className="dashboard__banner-title">Welcome back, {displayName} 👋</h1>
         <p className="dashboard__banner-sub">
           Your neighbourhood is ready to help — and so are you.
         </p>
@@ -42,10 +62,14 @@ function Dashboard() {
       {/* Nearby Skilled People */}
       <div className="dashboard__section-header">
         <h2 className="dashboard__section-title">Nearby Skilled People</h2>
-        <p className="dashboard__section-subtitle">People in {currentUser.neighborhood}</p>
+        <p className="dashboard__section-subtitle">People in {displayNeighborhood}</p>
       </div>
 
-      {nearbyPeople.length > 0 ? (
+      {loading ? (
+        <p style={{ color: 'var(--color-text-muted, #888)', padding: '1rem' }}>
+          Loading community members…
+        </p>
+      ) : nearbyPeople.length > 0 ? (
         <div className="dashboard__cards-grid">
           {nearbyPeople.map((user) => (
             <UserCard
@@ -58,7 +82,10 @@ function Dashboard() {
           ))}
         </div>
       ) : (
-        <p className="dashboard__empty">No other skilled people found in your neighbourhood yet.</p>
+        <p className="dashboard__empty">
+          No other skilled people found in your neighbourhood yet.{' '}
+          {!currentUser && <Link to="/register">Register to join the community!</Link>}
+        </p>
       )}
     </div>
   )

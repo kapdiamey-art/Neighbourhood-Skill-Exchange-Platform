@@ -1,9 +1,12 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import './Navbar.css'
 
 function Navbar() {
-  const location = useLocation()
+  const location  = useLocation()
+  const navigate  = useNavigate()
+  const { currentUser, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const links = [
@@ -14,9 +17,14 @@ function Navbar() {
     { to: '/profile',        label: 'Profile' },
   ]
 
-  const isActive = (path) => location.pathname === path
-
+  const isActive   = (path) => location.pathname === path
   const closeMobile = () => setMobileOpen(false)
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+    closeMobile()
+  }
 
   return (
     <nav className="navbar">
@@ -39,10 +47,28 @@ function Navbar() {
         ))}
       </div>
 
-      {/* Desktop auth buttons */}
+      {/* Desktop auth buttons — change based on login state */}
       <div className="navbar__auth">
-        <Link to="/login" className="navbar__login-btn">Log in</Link>
-        <Link to="/register" className="navbar__register-btn">Sign up</Link>
+        {currentUser ? (
+          <>
+            <span style={{ fontSize: '0.9rem', color: 'var(--color-text-muted, #888)',
+              alignSelf: 'center' }}>
+              👤 {currentUser.name.split(' ')[0]}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="navbar__login-btn"
+              style={{ cursor: 'pointer', border: 'none', background: 'transparent' }}
+            >
+              Log out
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login"    className="navbar__login-btn">Log in</Link>
+            <Link to="/register" className="navbar__register-btn">Sign up</Link>
+          </>
+        )}
       </div>
 
       {/* Mobile hamburger */}
@@ -67,8 +93,20 @@ function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link to="/login" className="navbar__login-btn" onClick={closeMobile}>Log in</Link>
-          <Link to="/register" className="navbar__register-btn" onClick={closeMobile}>Sign up</Link>
+          {currentUser ? (
+            <button
+              onClick={handleLogout}
+              className="navbar__login-btn"
+              style={{ cursor: 'pointer', border: 'none', background: 'transparent' }}
+            >
+              Log out
+            </button>
+          ) : (
+            <>
+              <Link to="/login"    className="navbar__login-btn"    onClick={closeMobile}>Log in</Link>
+              <Link to="/register" className="navbar__register-btn" onClick={closeMobile}>Sign up</Link>
+            </>
+          )}
         </div>
       )}
     </nav>

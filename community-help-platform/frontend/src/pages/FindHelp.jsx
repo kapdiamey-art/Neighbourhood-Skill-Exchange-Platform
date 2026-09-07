@@ -1,24 +1,39 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import UserCard from '../components/UserCard'
-import { mockUsers, neighborhoods } from '../data/mockData'
+import { usersAPI } from '../api/api'
 import './FindHelp.css'
-import './Login.css' /* reuse form classes */
+import './Login.css'
 
 function FindHelp() {
-  const [searchSkill, setSearchSkill] = useState('')
+  const [allUsers, setAllUsers]           = useState([])
+  const [loading, setLoading]             = useState(true)
+  const [searchSkill, setSearchSkill]     = useState('')
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('All')
   const [selectedAvailability, setSelectedAvailability] = useState('All')
+
+  useEffect(() => {
+    usersAPI.getAll()
+      .then(setAllUsers)
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
 
   const availabilityOptions = [
     'All', 'Weekdays', 'Weekends', 'Evenings',
     'Weekday Mornings', 'Weekday Afternoons', 'Anytime',
   ]
 
-  const filteredUsers = mockUsers.filter((user) => {
+  // Build unique neighborhood list from real data
+  const neighborhoods = ['All', ...new Set(allUsers.map((u) => u.neighborhood).filter(Boolean))]
+
+  // Filter users based on search inputs
+  const filteredUsers = allUsers.filter((user) => {
+    const skillsArr = user.skills ? user.skills.split(',').map((s) => s.trim()) : []
+
     const matchesSkill =
       searchSkill === '' ||
-      user.skills.some((s) => s.toLowerCase().includes(searchSkill.toLowerCase())) ||
-      user.profession.toLowerCase().includes(searchSkill.toLowerCase())
+      skillsArr.some((s) => s.toLowerCase().includes(searchSkill.toLowerCase())) ||
+      (user.profession || '').toLowerCase().includes(searchSkill.toLowerCase())
 
     const matchesNeighborhood =
       selectedNeighborhood === 'All' || user.neighborhood === selectedNeighborhood
@@ -77,29 +92,36 @@ function FindHelp() {
         </div>
       </div>
 
-      {/* Results */}
-      <p className="find-help__results-count">
-        <strong>{filteredUsers.length}</strong>{' '}
-        {filteredUsers.length === 1 ? 'person' : 'people'} found
-      </p>
-
-      {filteredUsers.length > 0 ? (
-        <div className="find-help__grid">
-          {filteredUsers.map((user) => (
-            <UserCard
-              key={user.id}
-              name={user.name}
-              profession={user.profession}
-              neighborhood={user.neighborhood}
-              rating={user.rating}
-            />
-          ))}
-        </div>
+      {loading ? (
+        <p style={{ color: 'var(--color-text-muted, #888)', padding: '1rem' }}>
+          Loading community members…
+        </p>
       ) : (
-        <div className="find-help__empty">
-          <span className="find-help__empty-icon">🔍</span>
-          <p>No people match your filters. Try broadening your search.</p>
-        </div>
+        <>
+          <p className="find-help__results-count">
+            <strong>{filteredUsers.length}</strong>{' '}
+            {filteredUsers.length === 1 ? 'person' : 'people'} found
+          </p>
+
+          {filteredUsers.length > 0 ? (
+            <div className="find-help__grid">
+              {filteredUsers.map((user) => (
+                <UserCard
+                  key={user.id}
+                  name={user.name}
+                  profession={user.profession}
+                  neighborhood={user.neighborhood}
+                  rating={user.rating}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="find-help__empty">
+              <span className="find-help__empty-icon">🔍</span>
+              <p>No people match your filters. Try broadening your search.</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
