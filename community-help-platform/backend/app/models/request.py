@@ -30,4 +30,5 @@ class HelpRequest(Base):
     urgency        = Column(String(20), default="Medium")
     status         = Column(String(20), default="Open")
     created_by     = Column(Integer, ForeignKey("users.id"), nullable=False)
+    helper_id      = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at     = Column(DateTime, default=datetime.utcnow)

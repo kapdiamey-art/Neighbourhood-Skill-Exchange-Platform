@@ -10,17 +10,32 @@ function MyRequests() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const fetchMyRequests = () => {
+    if (!currentUser) return
+    requestsAPI.getMine(currentUser.id)
+      .then(setRequests)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }
+
   useEffect(() => {
     if (!currentUser) {
       setLoading(false)
       return
     }
-    // Fetch only this user's requests from the backend
-    requestsAPI.getMine(currentUser.id)
-      .then(setRequests)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
+    fetchMyRequests()
   }, [currentUser])
+
+  const handleMarkCompleted = async (reqId) => {
+    try {
+      await requestsAPI.updateStatus(reqId, 'Completed')
+      setRequests((prev) =>
+        prev.map((r) => (r.id === reqId ? { ...r, status: 'Completed' } : r))
+      )
+    } catch (err) {
+      alert(err.message || 'Failed to mark as completed.')
+    }
+  }
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -85,18 +100,40 @@ function MyRequests() {
           <div key={req.id} className="request-card">
             <div className="request-card__top">
               <span className="request-card__title">{req.title}</span>
-              <span className={`badge ${getStatusClass(req.status)}`}>{req.status}</span>
+              <span className={`badge ${getStatusClass(req.status)}`}>
+                {req.status === 'In Progress' ? '⚡ In Progress (Helper Joined)' : req.status}
+              </span>
             </div>
 
             <p className="request-card__desc">{req.description}</p>
 
-            <div className="request-card__meta">
-              <span className="request-card__meta-item">🛠️ {req.skill_required}</span>
-              <span className={`request-card__meta-item ${getUrgencyClass(req.urgency)}`}>
-                {req.urgency === 'High' ? '🚨' : req.urgency === 'Medium' ? '⚡' : '📌'}{' '}
-                {req.urgency} Urgency
-              </span>
-              <span className="request-card__meta-item">📅 {formatDate(req.created_at)}</span>
+            <div className="request-card__meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <span className="request-card__meta-item">🛠️ {req.skill_required}</span>
+                <span className={`request-card__meta-item ${getUrgencyClass(req.urgency)}`}>
+                  {req.urgency === 'High' ? '🚨' : req.urgency === 'Medium' ? '⚡' : '📌'}{' '}
+                  {req.urgency} Urgency
+                </span>
+                <span className="request-card__meta-item">📅 {formatDate(req.created_at)}</span>
+              </div>
+
+              {req.status === 'In Progress' && (
+                <button
+                  onClick={() => handleMarkCompleted(req.id)}
+                  style={{
+                    padding: '0.4rem 0.8rem',
+                    background: '#10b981',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  ✔ Mark as Completed
+                </button>
+              )}
             </div>
           </div>
         ))}

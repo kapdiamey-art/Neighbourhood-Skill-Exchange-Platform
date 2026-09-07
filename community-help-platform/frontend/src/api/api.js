@@ -60,4 +60,10 @@ export const requestsAPI = {
       method: 'POST',
       body: JSON.stringify(requestData),
     }),
+
+  updateStatus: (requestId, status, helperId = null) =>
+    request(`/api/requests/${requestId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, helper_id: helperId }),
+    }),
 }

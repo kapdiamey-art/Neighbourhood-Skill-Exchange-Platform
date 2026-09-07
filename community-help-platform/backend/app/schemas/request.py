@@ -17,6 +17,13 @@ class RequestCreate(BaseModel):
     created_by:     int            # user ID of the logged-in user
 
 
+# ─── Input: Update request status ────────────────────────────────
+class RequestStatusUpdate(BaseModel):
+    """Data sent when offering help or completing a request."""
+    status:     str                 # "Open" | "In Progress" | "Completed"
+    helper_id:  Optional[int] = None # user ID who offered/accepted to help
+
+
 # ─── Output: What the API returns about a request ───────────────
 class RequestOut(BaseModel):
     """Help request data returned by the API."""
@@ -27,6 +34,7 @@ class RequestOut(BaseModel):
     urgency:        str
     status:         str
     created_by:     int
+    helper_id:      Optional[int] = None
     created_at:     datetime
 
     model_config = {"from_attributes": True}

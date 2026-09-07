@@ -19,14 +19,17 @@ MYSQL_HOST     = os.getenv("MYSQL_HOST", "localhost")
 MYSQL_PORT     = os.getenv("MYSQL_PORT", "3306")
 MYSQL_DB       = os.getenv("MYSQL_DB", "community_help")
 
+import urllib.parse
+
 # ---------------------------------------------------------------------------
 # DATABASE URL
 # ---------------------------------------------------------------------------
 # Format:  dialect+driver://user:password@host:port/database
 # mysql+pymysql tells SQLAlchemy to use PyMySQL as the driver.
-# PyMySQL is pure Python — no Rust/C compilation needed.
+# urllib.parse.quote_plus encodes special characters like '@' in passwords.
+encoded_password = urllib.parse.quote_plus(MYSQL_PASSWORD)
 DATABASE_URL = (
-    f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}"
+    f"mysql+pymysql://{MYSQL_USER}:{encoded_password}"
     f"@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
 )
 

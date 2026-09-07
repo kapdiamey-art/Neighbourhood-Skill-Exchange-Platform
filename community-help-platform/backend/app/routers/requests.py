@@ -2,9 +2,10 @@
 #
 # Handles help requests.
 # Routes:
-#   GET  /api/requests             → all open requests
-#   POST /api/requests             → create a new request
-#   GET  /api/requests/mine        → requests posted by a specific user
+#   GET   /api/requests                  → all open requests
+#   POST  /api/requests                  → create a new request
+#   GET   /api/requests/mine             → requests posted by a specific user
+#   PATCH /api/requests/{request_id}/status → update request status & helper
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -13,7 +14,7 @@ from typing import List, Optional
 from app.database.connection import get_db
 from app.models.request import HelpRequest
 from app.models.user import User
-from app.schemas.request import RequestCreate, RequestOut
+from app.schemas.request import RequestCreate, RequestStatusUpdate, RequestOut
 
 router = APIRouter(prefix="/api/requests", tags=["Help Requests"])
 
@@ -36,7 +37,6 @@ def get_all_requests(db: Session = Depends(get_db)):
 def get_my_requests(user_id: int, db: Session = Depends(get_db)):
     """
     Returns all requests created by a specific user.
-    The user_id is passed as a query parameter: /api/requests/mine?user_id=1
     """
     return (
         db.query(HelpRequest)
@@ -53,18 +53,11 @@ def get_my_requests(user_id: int, db: Session = Depends(get_db)):
 def create_request(data: RequestCreate, db: Session = Depends(get_db)):
     """
     Create a new help request.
-
-    Steps:
-    1. Verify the user exists
-    2. Create the HelpRequest row
-    3. Save to MySQL and return the created request
     """
-    # 1. Verify the user exists
     user = db.query(User).filter(User.id == data.created_by).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    # 2. Create the request
     new_request = HelpRequest(
         title          = data.title,
         description    = data.description,
@@ -78,3 +71,28 @@ def create_request(data: RequestCreate, db: Session = Depends(get_db)):
     db.refresh(new_request)
 
     return new_request
+
+
+# ════════════════════════════════════════════════════════════════
+# PATCH /api/requests/{request_id}/status
+# ════════════════════════════════════════════════════════════════
+@router.patch("/{request_id}/status", response_model=RequestOut)
+def update_request_status(
+    request_id: int,
+    data: RequestStatusUpdate,
+    db: Session = Depends(get_db)
+):
+    """
+    Update request status ("In Progress" or "Completed") and set helper_id.
+    """
+    req = db.query(HelpRequest).filter(HelpRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Request not found.")
+
+    req.status = data.status
+    if data.helper_id is not None:
+        req.helper_id = data.helper_id
+
+    db.commit()
+    db.refresh(req)
+    return req
