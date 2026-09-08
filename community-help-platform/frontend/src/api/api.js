@@ -3,7 +3,7 @@
 // Central API service — all backend calls go through here.
 // Base URL points to the FastAPI backend running on port 8000.
 
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 // ─── Generic fetch helper ────────────────────────────────────────
 // Wraps the browser's fetch() to:
