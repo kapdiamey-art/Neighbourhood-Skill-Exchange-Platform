@@ -33,13 +33,18 @@ DATABASE_URL = (
     f"@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
 )
 
+SSL_MODE = os.getenv("MYSQL_SSL_MODE", "")
+
+connect_args = {}
+if SSL_MODE.upper() in ["REQUIRED", "TRUE"]:
+    connect_args = {"ssl": {}}
+
 # ---------------------------------------------------------------------------
 # ENGINE
 # ---------------------------------------------------------------------------
-# The engine is the low-level connection pool to MySQL.
-# pool_pre_ping=True: tests the connection before using it from the pool,
-# preventing "MySQL has gone away" errors after idle periods.
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
+# pool_pre_ping=True: tests the connection before using it from the pool.
+# connect_args: passes SSL requirements if specified (e.g. for Aiven cloud MySQL).
+engine = create_engine(DATABASE_URL, pool_pre_ping=True, connect_args=connect_args)
 
 # ---------------------------------------------------------------------------
 # SESSION FACTORY
